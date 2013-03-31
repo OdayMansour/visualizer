@@ -1,0 +1,138 @@
+void analyzeSpectrumTemplate(std::vector<float> specL, std::vector<float> specR)
+{
+	// General parameters
+	float marker = 0.5 * (BAR1+BAR2);
+	float sineFreqMod = 20.0;
+
+	// General values
+	float temp;
+
+	//// Overall audio
+	float lowLoudness = 0, 
+		  midLoudness = 0, 
+		  highLoudness = 0,
+		  apparentLoudness = 0,
+		  avgLoudness = 0,
+		  smoothedBass = 0,
+		  avgBass = 0,
+		  cappedBass = 0,
+
+
+	//// Specific audio
+		  velocity = 0,
+
+	//// Overall video
+		  displacement = 0,
+		  oldDisplacement = 0,
+		  attenuation = 0,
+		  jumpRotation = 0,
+		  volumeRotation = 0,
+		  timeTicker = 0;
+
+	bool pulse = false;
+
+	//// Collect overall audio¡
+	for (int i=0; i<BAR1; i++) { lowLoudness += specR[i] + specL[i]; }
+	for (int i=BAR1; i<BAR2; i++) { midLoudness += specR[i] + specL[i]; }
+	for (int i=BAR2; i<SPECTRUMSIZE; i++) { highLoudness += specR[i] + specL[i]; }
+	
+	apparentLoudness = lowLoudness + midLoudness + highLoudness;
+	attenuation = 6.0*(SPECTRUMSIZE/1024.0);
+	apparentLoudness = apparentLoudness/attenuation;
+
+	//// Slowly decaying average
+	if ( apparentLoudness > avgLoudness ) { avgLoudness = (19.0*avgLoudness + apparentLoudness)/20.0; }
+	else { avgLoudness = (199.0*avgLoudness + apparentLoudness)/200.0; }
+
+	//// Bass component
+	if ( ( ((specR[0] + specL[0])/2.0) > (avgBass*1.5)) ) { smoothedBass = ((specR[0] + specL[0])/2.0); }
+	else { smoothedBass = smoothedBass * 4.0 / 5.0; }
+	cappedBass = min(smoothedBass, 0.2);
+	avgBass = (avgBass*6.0 + ((specR[0]+ specL[0])/2.0))/7.0;
+
+	fixColors();
+	if ( apparentLoudness > 1.7*avgLoudness ) { 
+		jumpRotation = 10*(2*(rand()%2)-1);
+		pulseColors();
+	} else {
+		jumpRotation = 0;
+	}
+
+	//// Actual Magic happens here
+	for (int i=1; i<SPECTRUMSIZE; i++) {
+
+		//// Bass additive
+		bassMover = cappedBass*sin((1/cappedBass)*sineFreqMod*i/SPECTRUMSIZE);
+
+		//// Start Right Channel
+		velocity = specR[i];
+
+		oldDisplacement = sceneObjects[i].Scale.y;
+		temp = 0.02+200.0/avgLoudness*2.0*velocity*(i/SPECTRUMSIZE) / ( 1.0 + i/marker);
+		if ( temp < oldDisplacement )
+			displacement = ( oldDisplacement*3 + temp ) / 4.0;
+		else
+			displacement = temp;
+
+		sceneObjects[i].Scale.x = 0;
+		sceneObjects[i].Scale.y = 0;
+		sceneObjects[i].Scale.z = 0;
+
+		sceneObjects[i].TranslationPre.x = 0;
+		sceneObjects[i].TranslationPre.y = 0;
+		sceneObjects[i].TranslationPre.z = 0;
+
+		sceneObjects[i].TranslationPost.x = 0;
+		sceneObjects[i].TranslationPost.y = 0;
+		sceneObjects[i].TranslationPost.z = 0;
+
+		sceneObjects[i].RotationPre.x = 0;
+		sceneObjects[i].RotationPre.y = 0;
+		sceneObjects[i].RotationPre.z = 0;
+
+		sceneObjects[i].RotationPost.x = 0;
+		sceneObjects[i].RotationPost.y = 0;
+		sceneObjects[i].RotationPost.z = 0;
+
+		//// Start Left Channel
+		velocity = specL[i];
+
+		oldDisplacement = sceneObjects[i+SPECTRUMSIZE].Scale.y;
+		temp = 0.02+200.0/avgLoudness*2.0*velocity*(i/SPECTRUMSIZE) / ( 1.0 + i/marker);
+		if ( temp < oldDisplacement )
+			displacement = ( oldDisplacement*3 + temp ) / 4.0;
+		else
+			displacement = temp;
+
+		sceneObjects[i+SPECTRUMSIZE].Scale.x = 0;
+		sceneObjects[i+SPECTRUMSIZE].Scale.y = 0;
+		sceneObjects[i+SPECTRUMSIZE].Scale.z = 0;
+
+		sceneObjects[i+SPECTRUMSIZE].TranslationPre.x = 0;
+		sceneObjects[i+SPECTRUMSIZE].TranslationPre.y = 0;
+		sceneObjects[i+SPECTRUMSIZE].TranslationPre.z = 0;
+
+		sceneObjects[i+SPECTRUMSIZE].TranslationPost.x = 0;
+		sceneObjects[i+SPECTRUMSIZE].TranslationPost.y = 0;
+		sceneObjects[i+SPECTRUMSIZE].TranslationPost.z = 0;
+
+		sceneObjects[i+SPECTRUMSIZE].RotationPre.x = 0;
+		sceneObjects[i+SPECTRUMSIZE].RotationPre.y = 0;
+		sceneObjects[i+SPECTRUMSIZE].RotationPre.z = 0;
+
+		sceneObjects[i+SPECTRUMSIZE].RotationPost.x = 0;
+		sceneObjects[i+SPECTRUMSIZE].RotationPost.y = 0;
+		sceneObjects[i+SPECTRUMSIZE].RotationPost.z = 0;
+
+	}
+
+	updateBackground();
+	
+	frameCount++;
+	if ( time(0) > now ) {
+		now = time(0);
+		std::cout << frameCount << "            Fps       \r";
+		std::cout.flush();
+		frameCount = 0;
+	}
+}
