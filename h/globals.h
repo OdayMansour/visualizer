@@ -37,7 +37,6 @@ enum EFFECT {
 	VOX,
 	LOOP,
 	FOUNTAIN,
-	SHADOW,
 	SPHERE
 };
 

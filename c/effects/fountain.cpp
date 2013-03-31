@@ -57,7 +57,7 @@ void analyzeSpectrumFountain(std::vector<float> specL, std::vector<float> specR)
 	Projection = glm::perspective((float)(sqrt(avgLoudness+0.7)/1.7)*45.0f, (float)w_width/(float)w_height, 0.1f, 100.0f);
 
 	//// Actual Magic happens here
-	for (int i=1; i<SPECTRUMSIZE; i++) {
+	for (int i=0; i<SPECTRUMSIZE; i++) {
 
 		//// Bass additive
 		bassMover = cappedBass*sin((1/cappedBass)*sineFreqMod*i/SPECTRUMSIZE);

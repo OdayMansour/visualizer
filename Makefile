@@ -3,7 +3,7 @@ LIB_PATH = ./lib
 LIB_NAME = libfmodex.dylib
 ARCH = -arch x86_64
 INC = -Iinc
-OBJECTS =  ./c/Cube.o ./c/effects/fountain.o ./c/effects/loop.o ./c/effects/shadows.o ./c/effects/sphere.o ./c/effects/spiral.o ./c/effects/vox.o ./c/fmod_handler.o ./c/generics.o ./c/InitShader.o ./c/SceneObject.o ./c/State.o ./c/templateEffect.o ./c/visualizer.o
+OBJECTS =  ./c/Cube.o ./c/effects/fountain.o ./c/effects/loop.o ./c/effects/sphere.o ./c/effects/spiral.o ./c/effects/vox.o ./c/fmod_handler.o ./c/generics.o ./c/InitShader.o ./c/SceneObject.o ./c/State.o ./c/templateEffect.o ./c/visualizer.o
 TARGET = visualizer
 OPENGL = -lglfw -framework Cocoa -framework OpenGL -lGLEW
 

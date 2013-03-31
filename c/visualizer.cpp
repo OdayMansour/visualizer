@@ -36,7 +36,7 @@ void usage() {
 	std::cout << "1 - Crown" << std::endl;
 	std::cout << "2 - Spiral" << std::endl;
 	std::cout << "3 - Fountain (reflection mode)" << std::endl;
-	std::cout << "4 - Fountain (shadow mode)" << std::endl;
+	std::cout << "4 - Sphere" << std::endl;
 	std::cout << "" << std::endl;
 }
 
@@ -60,8 +60,7 @@ int main(int argc, char *argv[])
 			case (int)'1': effect = LOOP; break;
 			case (int)'2': effect = SPIRAL; break;
 			case (int)'3': effect = FOUNTAIN; break;
-			case (int)'4': effect = SHADOW; break;
-			case (int)'5': effect = SPHERE; break;
+			case (int)'4': effect = SPHERE; break;
 		}
 	} else
 		effect = SPHERE;
@@ -82,14 +81,11 @@ int main(int argc, char *argv[])
 	} else if ( effect == FOUNTAIN ) {
 		renderer = analyzeSpectrumFountain;
 		SPECTRUMSIZE = 512;
-	} else if ( effect == SHADOW ) {
-		renderer = analyzeSpectrumShadows;
-		SPECTRUMSIZE = 512;
 	} else if ( effect == SPHERE ) {
 		renderer = analyzeSpectrumSphere;
 		SPECTRUMSIZE = 512;
 	} else {
-		std::cout << "Error.\n"; 
+		usage();
 		exit(EXIT_FAILURE);
 	}
 	

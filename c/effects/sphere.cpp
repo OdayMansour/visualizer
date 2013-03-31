@@ -2,124 +2,143 @@
 
 void analyzeSpectrumSphere(std::vector<float> specL, std::vector<float> specR)
 {
-	//Get the maximum frequency in order to normalize
-	float apparentLoudness;
-	float velocity;
-	float lowLoudness, midLoudness, highLoudness;
-	float displacement;
-	float attenuation;
-	float jumpRotation;
+	// General parameters
 	float marker = 0.5 * (BAR1+BAR2);
-	float volumeRotation;
 	float sineFreqMod = 20.0;
+
+	//// Overall audio
+	float lowLoudness = 0, 
+		  midLoudness = 0, 
+		  highLoudness = 0,
+		  apparentLoudness = 0,
+		  smoothedBass = 0,
+		  avgBass = 0,
+		  cappedBass = 0;
+
+
+	//// Specific audio
+	float velocity = 0,
+		  bassMover = 0;
+	State newStateR,
+		  newStateL;
+
+	//// Overall video
+	float displacement = 0,
+		  oldDisplacement = 0,
+		  newDisplacement = 0,
+		  attenuation = 0,
+		  jumpRotation = 0;
+
+	bool pulse = false;
+
+	//// Collect overall audio¡
+	for (int i=0; i<BAR1; i++) { lowLoudness += specR[i] + specL[i]; }
+	for (int i=BAR1; i<BAR2; i++) { midLoudness += specR[i] + specL[i]; }
+	for (int i=BAR2; i<SPECTRUMSIZE; i++) { highLoudness += specR[i] + specL[i]; }
 	
-	// Separating bass from mids from trebles
-	lowLoudness = 0;
-	midLoudness = 0;
-	highLoudness = 0;
-	apparentLoudness = 0;
-
-	for (int i=0; i<BAR1; i++) lowLoudness += specR[i] + specL[i];
-	for (int i=BAR1; i<BAR2; i++) midLoudness += specR[i] + specL[i];
-	for (int i=BAR2; i<SPECTRUMSIZE; i++) highLoudness += specR[i] + specL[i];	
-
-	for (int i=0; i<SPECTRUMSIZE; i++)
-		apparentLoudness += specR[i] + specL[i];
-
+	apparentLoudness = lowLoudness + midLoudness + highLoudness;
 	attenuation = 6.0*(SPECTRUMSIZE/1024.0);
 	apparentLoudness = apparentLoudness/attenuation;
 
-	if ( apparentLoudness > avgLoudness )
-		avgLoudness = (19.0*avgLoudness + apparentLoudness)/20.0;
-	else
-		avgLoudness = (199.0*avgLoudness + apparentLoudness)/200.0;
+	//// Slowly decaying average
+	if ( apparentLoudness > avgLoudness ) { avgLoudness = (19.0*avgLoudness + apparentLoudness)/20.0; }
+	else { avgLoudness = (199.0*avgLoudness + apparentLoudness)/200.0; }
+
+	//// Bass component
+	if ( ( ((specR[0] + specL[0])/2.0) > (avgBass*1.5)) ) { smoothedBass = ((specR[0] + specL[0])/2.0); }
+	else { smoothedBass = smoothedBass * 4.0 / 5.0; }
+	cappedBass = min(smoothedBass, 0.2);
+	avgBass = (avgBass*6.0 + ((specR[0]+ specL[0])/2.0))/7.0;
 
 	fixColors();
 
-	// timeTicker -= 0.04;
-
-	int j;
-
-	if ( apparentLoudness > 1.7*avgLoudness ) { 
-		jumpRotation = 10*(2*(rand()%2)-1);
-	} else {
-		jumpRotation = 0;
-	}
-
-	volumeRotation = avgLoudness + jumpRotation;
-	float oldDisplacement;
-	float temp;
-	intensityRotation += 4*avgLoudness;
-
 	timeTicker -= 0.01*apparentLoudness;
 
-	if ( ( ((specR[0] + specL[0])/2.0) > (avgBass*1.5)) )
-		smoothedBass = ((specR[0] + specL[0])/2.0);
-	else
-		smoothedBass = smoothedBass * 4.0 / 5.0;
-
-	cappedBass = min(smoothedBass, 0.2);
-
-	avgBass = (avgBass*6.0 + ((specR[0] + specL[0])/2.0))/7.0;
-
-	sceneObjects[0].Scale = glm::vec3(0,0,0);
-	sceneObjects[((int)SPECTRUMSIZE)].Scale = glm::vec3(0,0,0);
-
-	float bassMover;
-
+	//// Actual Magic happens here
 	for (int i=1; i<SPECTRUMSIZE; i++) {
 
+		//// Bass additive
 		bassMover = cappedBass*sin((1/cappedBass)*sineFreqMod*i/SPECTRUMSIZE);
 
+		//// Start Right Channel
 		velocity = specR[i];
+		newStateR.set(sceneObjects[i].getState());
 
-		oldDisplacement = sceneObjects[i].Scale.y;
-		temp = 0.02+150.0/avgLoudness*2.0*velocity*(i/SPECTRUMSIZE) / ( 1.0 + i/marker);
-		if ( temp < oldDisplacement )
-			displacement = ( oldDisplacement*3 + temp ) / 4.0;
+		oldDisplacement = newStateR.Scale.y;
+		
+		newDisplacement = 0.02+200.0/avgLoudness*2.0*velocity*(i/SPECTRUMSIZE) / ( 1.0 + i/marker);
+		if ( newDisplacement < oldDisplacement )
+			displacement = ( oldDisplacement*3 + newDisplacement ) / 4.0;
 		else
-			displacement = temp;
+			displacement = newDisplacement;
 
-		sceneObjects[i].Scale.y = displacement + 0.5*bassMover;
+		// newStateR.Scale.x = 0;
+		newStateR.Scale.y = displacement + 0.5*bassMover;
+		// newStateR.Scale.z = 0;
 
-		sceneObjects[i].Color[0] = 1 - cTheme.r + (colorScaler * displacement);
-		sceneObjects[i].Color[1] = 1 - cTheme.g + (colorScaler * displacement);
-		sceneObjects[i].Color[2] = 1 - cTheme.b + (colorScaler * displacement);
+		// newStateR.TranslationPre.x = 0;
+		// newStateR.TranslationPre.y = 0;
+		// newStateR.TranslationPre.z = 0;
 
-		sceneObjects[i].RotationPost.y = 50*timeTicker;
+		// newStateR.TranslationPost.x = 0;
+		// newStateR.TranslationPost.y = 0;
+		// newStateR.TranslationPost.z = 0;
 
+		// newStateR.RotationPre.x = 0;
+		// newStateR.RotationPre.y = 0;
+		// newStateR.RotationPre.z = 0;
+
+		// newStateR.RotationPost.x = 0;
+		newStateR.RotationPost.y = 50*timeTicker;
+		// newStateR.RotationPost.z = 0;
+
+		newStateR.Color[0] =  1 - cTheme.r + (colorScaler * displacement);
+		newStateR.Color[1] =  1 - cTheme.g + (colorScaler * displacement);
+		newStateR.Color[2] =  1 - cTheme.b + (colorScaler * displacement);
+
+		sceneObjects[i].setState(newStateR);
+
+		//// Start Left Channel
 		velocity = specL[i];
+		newStateL.set(sceneObjects[i+(int)SPECTRUMSIZE].getState());
 
-		oldDisplacement = - sceneObjects[(int)SPECTRUMSIZE+i].Scale.y;
-		temp = 0.02+50.0/avgLoudness*2.0*velocity*(i/SPECTRUMSIZE) / ( 1.0 + i/marker);
-		if ( temp < oldDisplacement )
-			displacement = ( oldDisplacement*3 + temp ) / 4.0;
+		oldDisplacement = - newStateL.Scale.y;
+		newDisplacement = 0.02+200.0/avgLoudness*2.0*velocity*(i/SPECTRUMSIZE) / ( 1.0 + i/marker);
+		if ( newDisplacement < oldDisplacement )
+			displacement = ( oldDisplacement*3 + newDisplacement ) / 4.0;
 		else
-			displacement = temp;
+			displacement = newDisplacement;
 
-		sceneObjects[i+(int)SPECTRUMSIZE].Scale.y = - displacement - 0.5*bassMover;
+		// newStateL.Scale.x = 0;
+		newStateL.Scale.y = - displacement - 0.5*bassMover;
+		// newStateL.Scale.z = 0;
 
-		sceneObjects[i+(int)SPECTRUMSIZE].Color[0] = cTheme.r + (colorScaler * displacement);
-		sceneObjects[i+(int)SPECTRUMSIZE].Color[1] = cTheme.g + (colorScaler * displacement);
-		sceneObjects[i+(int)SPECTRUMSIZE].Color[2] = cTheme.b + (colorScaler * displacement);
+		// newStateL.TranslationPre.x = 0;
+		// newStateL.TranslationPre.y = 0;
+		// newStateL.TranslationPre.z = 0;
 
-		float color = displacement*4;
+		// newStateL.TranslationPost.x = 0;
+		// newStateL.TranslationPost.y = 0;
+		// newStateL.TranslationPost.z = 0;
 
-		// sceneObjects[i+(int)SPECTRUMSIZE].Color[0] = color;
-		// sceneObjects[i+(int)SPECTRUMSIZE].Color[1] = color-1;
-		// sceneObjects[i+(int)SPECTRUMSIZE].Color[2] = color-2;
+		// newStateL.RotationPre.x = 0;
+		// newStateL.RotationPre.y = 0;
+		// newStateL.RotationPre.z = 0;
 
-		sceneObjects[i+(int)SPECTRUMSIZE].RotationPost.y = 50*timeTicker;
+		// newStateL.RotationPost.x = 0;
+		newStateL.RotationPost.y = 50*timeTicker;
+		// newStateL.RotationPost.z = 0;
+
+		newStateL.Color[0] = cTheme.r + (colorScaler * displacement);
+		newStateL.Color[1] = cTheme.g + (colorScaler * displacement);
+		newStateL.Color[2] = cTheme.b + (colorScaler * displacement);
+
+		sceneObjects[i+(int)SPECTRUMSIZE].setState(newStateL);
 
 	}
 
-	///////////////////////////// END SECOND EFFECT
-
 	updateBackground();
-
-	// std::cout << avgLoudness << "                   \r";
-	// std::cout.flush();
-
+	
 	frameCount++;
 	if ( time(0) > now ) {
 		now = time(0);

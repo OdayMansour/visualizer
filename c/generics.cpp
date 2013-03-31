@@ -61,7 +61,7 @@ bool initScene( EFFECT effect )
 	attributes.push_back(std::make_pair(1,vColor));
 	attributes.push_back(std::make_pair(2,vNormal));
 
-	if ( effect == SPIRAL || effect == FOUNTAIN || effect == SHADOW || effect == SPHERE ) {
+	if ( effect == SPIRAL || effect == FOUNTAIN || effect == SPHERE ) {
 		Projection = glm::perspective(45.0f, (float)w_width/(float)w_height, 0.1f, 100.0f);
 		View = glm::lookAt(	glm::vec3(2,3,0),	glm::vec3(0,0,0),	glm::vec3(0,1,0));
 	} else if ( effect == VOX ) {
@@ -91,8 +91,8 @@ void initCubes( EFFECT effect )
 		}
 	} else if ( effect == VOX ) {
 		for (int i=0; i<SPECTRUMSIZE*2; i++) {
-			sceneObjects[i].TranslationPost = glm::vec3(0.0,0.0,((float)i/(SPECTRUMSIZE)-1));
-			sceneObjects[i].Scale = glm::vec3(cubeScale, cubeScale, cubeScale);
+			sceneObjects[i].state.TranslationPost = glm::vec3(0.0,0.0,((float)i/(SPECTRUMSIZE)-1));
+			sceneObjects[i].state.Scale = glm::vec3(cubeScale, cubeScale, cubeScale);
 			initBuffers(&sceneObjects[i], attributes);
 		}
 	} else if ( effect == FOUNTAIN ) {
@@ -119,24 +119,6 @@ void initCubes( EFFECT effect )
 			// sceneObjects[i+(int)SPECTRUMSIZE].state.Scale = sceneObjects[i].state.Scale;
 			initBuffers(&sceneObjects[i+(int)SPECTRUMSIZE], attributes);
 		}
-	} else if ( effect == SHADOW ) {
-		float angle, distance;
-		for (int i=0; i<SPECTRUMSIZE; i++) {
-			angle = rand()%360;
-			distance = (int)(i/SPECTRUMSIZE*2*5)/5.0 + 0.1;
-			
-			sceneObjects[i].TranslationPost = glm::vec3(distance*sin(angle),0.0,distance*cos(angle));
-			sceneObjects[i].TranslationPre = glm::vec3(0.0,0.5,0.0);
-			sceneObjects[i].Scale = glm::vec3(cubeScale, cubeScale, cubeScale);
-			sceneObjects[i].RotationPre.x = 90.0;
-			sceneObjects[i].RotationPre.y = (angle/M_PI)*180;
-			initBuffers(&sceneObjects[i], attributes);
-
-			sceneObjects[i+(int)SPECTRUMSIZE].TranslationPost = sceneObjects[i].TranslationPost;
-			sceneObjects[i+(int)SPECTRUMSIZE].TranslationPre = glm::vec3(0.0,0.5,0.0);
-			sceneObjects[i+(int)SPECTRUMSIZE].Scale = sceneObjects[i].Scale;
-			initBuffers(&sceneObjects[i+(int)SPECTRUMSIZE], attributes);
-		}
 	} else if ( effect == SPHERE ) {
 
 		float r;
@@ -147,21 +129,18 @@ void initCubes( EFFECT effect )
 			r = cos(heightAlpha/180.0*M_PI);
 			y = sin(heightAlpha/180.0*M_PI);
 			for ( float angle = 0; angle < 360; angle += grandStep ) {
-				sceneObjects[i].TranslationPost = glm::vec3(r*cos(angle/180.0*M_PI),y,r*sin(angle/180.0*M_PI));
-				sceneObjects[i].Scale = glm::vec3(cubeScale, cubeScale, cubeScale);
-				sceneObjects[i].TranslationPre = glm::vec3(0.0,0.5,0.0);
-				sceneObjects[i].RotationPre.x = - heightAlpha - 90.0;		
-				sceneObjects[i].RotationPre.y = 90.0 - angle;
+				sceneObjects[i].state.TranslationPost = glm::vec3(r*cos(angle/180.0*M_PI),y,r*sin(angle/180.0*M_PI));
+				sceneObjects[i].state.Scale = glm::vec3(cubeScale, cubeScale, cubeScale);
+				sceneObjects[i].state.TranslationPre = glm::vec3(0.0,0.5,0.0);
+				sceneObjects[i].state.RotationPre.x = - heightAlpha - 90.0;		
+				sceneObjects[i].state.RotationPre.y = 90.0 - angle;
 				initBuffers(&sceneObjects[i], attributes);
 
-				sceneObjects[i+(int)SPECTRUMSIZE].TranslationPost = glm::vec3(r*cos(angle/180.0*M_PI),y,r*sin(angle/180.0*M_PI));
-				sceneObjects[i+(int)SPECTRUMSIZE].Scale = glm::vec3(cubeScale, cubeScale, cubeScale);
-				sceneObjects[i+(int)SPECTRUMSIZE].TranslationPre = glm::vec3(0.0,0.5,0.0);
-				sceneObjects[i+(int)SPECTRUMSIZE].RotationPre.x = - heightAlpha - 90.0;		
-				sceneObjects[i+(int)SPECTRUMSIZE].RotationPre.y = 90.0 - angle;
-
-				// sceneObjects[i+(int)SPECTRUMSIZE].Scale.x = r/5.0;
-				// sceneObjects[i+(int)SPECTRUMSIZE].Scale.z = 0.1;
+				sceneObjects[i+(int)SPECTRUMSIZE].state.TranslationPost = glm::vec3(r*cos(angle/180.0*M_PI),y,r*sin(angle/180.0*M_PI));
+				sceneObjects[i+(int)SPECTRUMSIZE].state.Scale = glm::vec3(cubeScale, cubeScale, cubeScale);
+				sceneObjects[i+(int)SPECTRUMSIZE].state.TranslationPre = glm::vec3(0.0,0.5,0.0);
+				sceneObjects[i+(int)SPECTRUMSIZE].state.RotationPre.x = - heightAlpha - 90.0;		
+				sceneObjects[i+(int)SPECTRUMSIZE].state.RotationPre.y = 90.0 - angle;
 
 				initBuffers(&sceneObjects[i+(int)SPECTRUMSIZE], attributes);
 				i++;

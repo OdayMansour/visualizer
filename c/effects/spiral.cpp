@@ -71,7 +71,7 @@ void analyzeSpectrumSpiral(std::vector<float> specL, std::vector<float> specR)
 	float bassMover;
 	int decalage = SPECTRUMSIZE;
 
-	for (int i=1; i<SPECTRUMSIZE; i++) {
+	for (int i=0; i<SPECTRUMSIZE; i++) {
 
 		j = 5*i;
 		mover = timeTicker + ( j /SPECTRUMSIZE ) *M_PI;
