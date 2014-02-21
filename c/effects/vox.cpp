@@ -18,16 +18,16 @@ void analyzeSpectrumVox(std::vector<float> specL, std::vector<float> specR)
 
 	//// Specific audio
 	float velocity = 0,
-		  bassMover = 0;
+				bassMover = 0;
 	State newStateR,
-		  newStateL;
+				newStateL;
 
 	//// Overall video
 	float displacement = 0,
-		  oldDisplacement = 0,
-		  newDisplacement = 0,
-		  attenuation = 0,
-		  jumpRotation = 0;
+		  	oldDisplacement = 0,
+		  	newDisplacement = 0,
+		  	attenuation = 0,
+		  	jumpRotation = 0;
 
 	bool pulse = false;
 

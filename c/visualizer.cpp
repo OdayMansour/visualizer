@@ -1,31 +1,31 @@
 #include "../h/common.h"
 
-int 									effect;
-float 									SPECTRUMSIZE;
-int										key;
-std::string								TAG;
-GLuint 									program, vPosition, vColor, vNormal, mvpID, heatID;
-glm::mat4 								Projection, View, Model, MVP;
-Cube*									sceneObjects;
+int 																	effect;
+float 																SPECTRUMSIZE;
+int																		key;
+std::string														TAG;
+GLuint 																program, vPosition, vColor, vNormal, mvpID, heatID;
+glm::mat4 														Projection, View, Model, MVP;
+Cube*																	sceneObjects;
 std::vector<std::pair<int, GLuint> > 	attributes;
-int 									w_height;
-int 									w_width;
-glm::vec4 								cTheme;
-glm::vec4 								destTheme;
-float 									colorIncrement;
-float 									avgLoudness;
-bool									pulse;
-float									pulseMag;
-float									colorScaler;
-float									cubeScale;
-float									timeTicker;
-float 									intensityRotation;
-int 									frameCount;
-int										now;
-float									smoothedBass;
-float 									cappedBass;
-float 									avgBass;
-float									colorSaturation;
+int 																	w_height;
+int 																	w_width;
+glm::vec4 														cTheme;
+glm::vec4 														destTheme;
+float 																colorIncrement;
+float 																avgLoudness;
+bool																	pulse;
+float																	pulseMag;
+float																	colorScaler;
+float																	cubeScale;
+float																	timeTicker;
+float 																intensityRotation;
+int 																	frameCount;
+int																		now;
+float																	smoothedBass;
+float 																cappedBass;
+float 																avgBass;
+float																	colorSaturation;
 
 /* Function that displays the usage of command line tool */
 void usage() { 

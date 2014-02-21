@@ -12,6 +12,9 @@ void analyzeSpectrumSpiral(std::vector<float> specL, std::vector<float> specR)
 	float marker = 0.5 * (BAR1+BAR2);
 	float volumeRotation;
 	float sineFreqMod = 20.0;
+
+	State newStateR,
+				newStateL;
 	
 	// Separating bass from mids from trebles
 	lowLoudness = 0;
@@ -79,63 +82,82 @@ void analyzeSpectrumSpiral(std::vector<float> specL, std::vector<float> specR)
 		bassMover = cappedBass*sin((1/cappedBass)*sineFreqMod*i/SPECTRUMSIZE);
 
 		velocity = specR[i];
+		newStateR.set(sceneObjects[i].getState());
 
-		oldDisplacement = sceneObjects[i].state.Scale.y;
+		oldDisplacement = newStateR.Scale.y;
 		temp = 0.02+200.0/avgLoudness*2.0*velocity*(i/SPECTRUMSIZE) / ( 1.0 + i/marker);
 		if ( temp < oldDisplacement )
 			displacement = ( oldDisplacement*3 + temp ) / 4.0;
 		else
 			displacement = temp;
 
-		// sceneObjects[i].Scale.x = cubeScale;
-		sceneObjects[i].state.Scale.y = displacement + 0.5*bassMover;
-		// sceneObjects[i].Scale.z = cubeScale;
+		// newStateR.Scale.x = 0;
+		newStateR.Scale.y = displacement + 0.5*bassMover;
+		// newStateR.Scale.z = 0;
 
-		sceneObjects[i].state.TranslationPost.x = -cos( mover ) * radius;
-		sceneObjects[i].state.TranslationPost.y = -displacement - 1*bassMover;
-		sceneObjects[i].state.TranslationPost.z = -sin( mover ) * radius;
+		// newStateR.TranslationPre.x = 0;
+		// newStateR.TranslationPre.y = 0;
+		// newStateR.TranslationPre.z = 0;
 
-		sceneObjects[i].state.Color[0] = cTheme.r - (colorScaler * displacement);
-		sceneObjects[i].state.Color[1] = cTheme.g - (colorScaler * displacement);
-		sceneObjects[i].state.Color[2] = cTheme.b - (colorScaler * displacement);
+		newStateR.TranslationPost.x =  -cos( mover ) * radius;
+		newStateR.TranslationPost.y =  -displacement - 1*bassMover;
+		newStateR.TranslationPost.z =  -sin( mover ) * radius;
 
-		sceneObjects[i].state.RotationPost.x = 0;
-		// sceneObjects[i]->Rotation.z = (intensityRotation + timeTicker)/4.0;
-		// sceneObjects[i]->Rotation.y = (intensityRotation + timeTicker)/4.0;
+		// newStateR.RotationPre.x = 0;
+		// newStateR.RotationPre.y = 0;
+		// newStateR.RotationPre.z = 0;
+
+		newStateR.RotationPost.x += 0;
+		// newStateR.RotationPost.y = 0;
+		// newStateR.RotationPost.z = 0;
+
+		newStateR.Color[0] = cTheme.r - (colorScaler * displacement);
+		newStateR.Color[1] = cTheme.g - (colorScaler * displacement);
+		newStateR.Color[2] = cTheme.b - (colorScaler * displacement);
+
+		sceneObjects[i].setState(newStateR);
 
 		velocity = specL[i];
+		newStateL.set(sceneObjects[i+(int)SPECTRUMSIZE].getState());
 
-		oldDisplacement = sceneObjects[(int)SPECTRUMSIZE+i].state.Scale.y;
+		oldDisplacement = newStateL.Scale.y;
 		temp = 0.02+200.0/avgLoudness*2.0 *velocity*(i/SPECTRUMSIZE) / ( 1.0 + i/marker);
 		if ( temp < oldDisplacement )
 			displacement = ( oldDisplacement*3 + temp ) / 4.0;
 		else
 			displacement = temp;
 
-		// sceneObjects[i+(int)SPECTRUMSIZE].Scale.x = cubeScale;
-		sceneObjects[i+decalage].state.Scale.y = displacement + 0.5*bassMover;
-		// sceneObjects[i+(int)SPECTRUMSIZE].Scale.z = cubeScale;
+		// newStateL.Scale.x = 0;
+		newStateL.Scale.y = displacement + 0.5*bassMover;
+		// newStateL.Scale.z = 0;
 
-		sceneObjects[i+(int)SPECTRUMSIZE].state.TranslationPost.x = -cos( mover ) * radius;
-		sceneObjects[i+(int)SPECTRUMSIZE].state.TranslationPost.y = displacement + 1*bassMover;
-		sceneObjects[i+(int)SPECTRUMSIZE].state.TranslationPost.z = -sin( mover ) * radius;
+		// newStateL.TranslationPre.x = 0;
+		// newStateL.TranslationPre.y = 0;
+		// newStateL.TranslationPre.z = 0;
 
-		sceneObjects[i+(int)SPECTRUMSIZE].state.Color[0] = cTheme.r + (colorScaler * displacement);
-		sceneObjects[i+(int)SPECTRUMSIZE].state.Color[1] = cTheme.g + (colorScaler * displacement);
-		sceneObjects[i+(int)SPECTRUMSIZE].state.Color[2] = cTheme.b + (colorScaler * displacement);
+		newStateL.TranslationPost.x = -cos( mover ) * radius;
+		newStateL.TranslationPost.y = displacement + 1*bassMover;
+		newStateL.TranslationPost.z = -sin( mover ) * radius;
 
-		sceneObjects[i+(int)SPECTRUMSIZE].state.RotationPost.x = 0;
-		// sceneObjects[i+SPECTRUMSIZE]->Rotation.z = (intensityRotation + timeTicker)/4.0;
-		// sceneObjects[i+SPECTRUMSIZE]->Rotation.y = (intensityRotation + timeTicker)/4.0;
+		// newStateL.RotationPre.x = 0;
+		// newStateL.RotationPre.y = 0;
+		// newStateL.RotationPre.z = 0;
+
+		newStateL.RotationPost.x += 0;
+		// newStateL.RotationPost.y = 0;
+		// newStateL.RotationPost.z = 0;
+
+		newStateL.Color[0] = cTheme.r + (colorScaler * displacement);
+		newStateL.Color[1] = cTheme.g + (colorScaler * displacement);
+		newStateL.Color[2] = cTheme.b + (colorScaler * displacement);
+
+		sceneObjects[i+(int)SPECTRUMSIZE].setState(newStateL);
 
 	}
 
 	///////////////////////////// END SECOND EFFECT
 
 	updateBackground();
-
-	// std::cout << avgLoudness << "                   \r";
-	// std::cout.flush();
 
 	frameCount++;
 	if ( time(0) > now ) {
